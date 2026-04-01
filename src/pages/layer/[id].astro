@@ -1,0 +1,147 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+const base = import.meta.env.BASE_URL;
+
+const layers: Record<string, {
+  num: number; icon: string; name: string; nameZh: string; color: string;
+  prev?: string; next?: string;
+}> = {
+  loop:         { num: 1, icon: '🔁', name: 'The Agent Loop', nameZh: '代理迴圈', color: '#3B82F6', next: 'tools' },
+  tools:        { num: 2, icon: '🛠️', name: 'Tool System', nameZh: '工具系統', color: '#F97316', prev: 'loop', next: 'context' },
+  context:      { num: 3, icon: '🧠', name: 'Context Management', nameZh: '上下文管理', color: '#8B5CF6', prev: 'tools', next: 'persistence' },
+  persistence:  { num: 4, icon: '💾', name: 'Persistence', nameZh: '持久化', color: '#10B981', prev: 'context', next: 'verification' },
+  verification: { num: 5, icon: '✅', name: 'Verification', nameZh: '驗證', color: '#14B8A6', prev: 'persistence', next: 'constraints' },
+  constraints:  { num: 6, icon: '🛑', name: 'Constraints', nameZh: '約束', color: '#EF4444', prev: 'verification' },
+};
+
+export function getStaticPaths() {
+  return Object.keys(layers).map((id) => ({ params: { id } }));
+}
+
+const { id } = Astro.params as { id: string };
+const layer = layers[id];
+if (!layer) return Astro.redirect(base);
+
+// Load snippet file
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+let snippet = '';
+try {
+  const snippetPath = resolve(process.cwd(), `src/snippets/0${layer.num}_${id}.py`);
+  snippet = readFileSync(snippetPath, 'utf-8');
+} catch { snippet = '# Snippet not found'; }
+
+// Load content
+import { readdirSync } from 'node:fs';
+let contentEn = '';
+let contentZh = '';
+try {
+  const enPath = resolve(process.cwd(), `src/content/en/0${layer.num}-${id}.md`);
+  contentEn = readFileSync(enPath, 'utf-8');
+} catch { contentEn = ''; }
+try {
+  const zhPath = resolve(process.cwd(), `src/content/zh-TW/0${layer.num}-${id}.md`);
+  contentZh = readFileSync(zhPath, 'utf-8');
+} catch { contentZh = ''; }
+---
+<BaseLayout title={`Layer ${layer.num}: ${layer.name}`}>
+  <div class="container" style="padding-top: 2rem; padding-bottom: 4rem;">
+
+    <!-- Layer Header -->
+    <div style={`border-left: 4px solid ${layer.color}; padding-left: 1.5rem; margin-bottom: 2rem;`}>
+      <h1 style={`color: ${layer.color}; margin-top: 0;`}>
+        {layer.icon} Layer {layer.num}: {layer.name}
+      </h1>
+      <p data-lang="zh-TW" style="font-size: 1.2rem; color: var(--color-text-muted);">
+        {layer.nameZh}
+      </p>
+    </div>
+
+    <!-- Navigation between layers -->
+    <nav style="display: flex; gap: 1rem; margin-bottom: 2rem;">
+      {layer.prev && (
+        <a href={`${base}layer/${layer.prev}`}>&larr; Previous Layer</a>
+      )}
+      <a href={base}>All Layers</a>
+      {layer.next && (
+        <a href={`${base}layer/${layer.next}`}>Next Layer &rarr;</a>
+      )}
+    </nav>
+
+    <!-- Split Pane: Explanation + Code -->
+    <div class="split-pane">
+
+      <!-- Left: Explanation -->
+      <div>
+        <div data-lang="en">
+          {contentEn ? (
+            <Fragment set:html={contentEn.replace(/^#/gm, '###').split('\n').map(line =>
+              line.startsWith('###') ? `<h3>${line.replace(/^###\s*/, '')}</h3>` :
+              line.startsWith('> ') ? `<blockquote><p>${line.slice(2)}</p></blockquote>` :
+              line.startsWith('- ') ? `<li>${line.slice(2)}</li>` :
+              line.trim() === '' ? '<br/>' :
+              `<p>${line}</p>`
+            ).join('\n')} />
+          ) : (
+            <p style="color: var(--color-text-muted);">Content coming soon.</p>
+          )}
+        </div>
+        <div data-lang="zh-TW">
+          {contentZh ? (
+            <Fragment set:html={contentZh.replace(/^#/gm, '###').split('\n').map(line =>
+              line.startsWith('###') ? `<h3>${line.replace(/^###\s*/, '')}</h3>` :
+              line.startsWith('> ') ? `<blockquote><p>${line.slice(2)}</p></blockquote>` :
+              line.startsWith('- ') ? `<li>${line.slice(2)}</li>` :
+              line.trim() === '' ? '<br/>' :
+              `<p>${line}</p>`
+            ).join('\n')} />
+          ) : (
+            <p style="color: var(--color-text-muted);">內容即將推出。</p>
+          )}
+        </div>
+
+        <!-- Runnable example link -->
+        <div class="callout tip" style="margin-top: 2rem;">
+          <strong data-lang="en">Try it yourself:</strong>
+          <strong data-lang="zh-TW">自己試試看：</strong>
+          <pre><code>python examples/0{layer.num}_{id === 'loop' ? 'agent_loop' : id === 'tools' ? 'tool_system' : id === 'context' ? 'context_manager' : id}.py</code></pre>
+        </div>
+      </div>
+
+      <!-- Right: Code -->
+      <div>
+        <div class="code-block">
+          <div class="code-tabs">
+            <button class="code-tab active" onclick="showTab(this, 'python')">Python (claw-code)</button>
+            <button class="code-tab" onclick="showTab(this, 'concept')">TypeScript (Claude Code concept)</button>
+          </div>
+          <div id="tab-python">
+            <pre><code>{snippet}</code></pre>
+          </div>
+          <div id="tab-concept" style="display: none;">
+            <pre><code>{`// Claude Code TypeScript equivalent (conceptual)
+// The original Claude Code implements this pattern in TypeScript.
+// claw-code reimplements it in Python — see the Python tab for the actual code.
+//
+// Key mapping:
+//   claw-code Python class → Claude Code TypeScript equivalent
+//   PortRuntime            → Runtime (main orchestrator)
+//   QueryEnginePort        → QueryEngine (turn processing)
+//   ToolPermissionContext   → PermissionEngine (6-layer evaluation)
+//   StoredSession          → SessionStore (JSON persistence)
+//   CostTracker            → UsageTracker (token counting)`}</code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script is:inline>
+function showTab(btn, tabId) {
+  btn.parentElement.querySelectorAll('.code-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-python').style.display = tabId === 'python' ? '' : 'none';
+  document.getElementById('tab-concept').style.display = tabId === 'concept' ? '' : 'none';
+}
+</script>

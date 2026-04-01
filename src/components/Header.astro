@@ -1,0 +1,32 @@
+---
+const base = import.meta.env.BASE_URL;
+---
+<header class="site-header">
+  <div class="inner">
+    <a href={base} class="logo">Agent-Harness-101</a>
+    <nav>
+      <a href={`${base}#layers`}>Layers</a>
+      <a href="https://github.com/jack-lin-ds-ai/agent-harness-101" target="_blank" rel="noopener">GitHub</a>
+      <div class="lang-toggle">
+        <button id="lang-en" class="active" onclick="setLang('en')">EN</button>
+        <button id="lang-zh" onclick="setLang('zh-TW')">中文</button>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<script is:inline>
+function setLang(lang) {
+  localStorage.setItem('lang', lang);
+  document.documentElement.lang = lang;
+  document.querySelectorAll('[data-lang]').forEach(el => {
+    el.style.display = el.dataset.lang === lang ? '' : 'none';
+  });
+  document.getElementById('lang-en').classList.toggle('active', lang === 'en');
+  document.getElementById('lang-zh').classList.toggle('active', lang === 'zh-TW');
+}
+document.addEventListener('DOMContentLoaded', () => {
+  const lang = localStorage.getItem('lang') || 'en';
+  setLang(lang);
+});
+</script>

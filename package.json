@@ -1,0 +1,15 @@
+{
+  "name": "agent-harness-101",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Learn Agent Harness Engineering in Python — Architecture Patterns from Claude Code",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "astro": "^6.1.2"
+  }
+}

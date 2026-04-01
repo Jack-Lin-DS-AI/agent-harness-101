@@ -1,0 +1,158 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+const base = import.meta.env.BASE_URL;
+
+const layers = [
+  { id: 'loop', num: 1, icon: '🔁', name: 'The Agent Loop', nameZh: '代理迴圈',
+    desc: 'Observe → Decide → Act → Verify → Update. The core while(true) that drives everything.',
+    descZh: '觀察 → 決策 → 行動 → 驗證 → 更新。驅動一切的核心 while(true) 迴圈。',
+    color: '#3B82F6', example: 'queryLoop() — a single while(true)', files: 'runtime.py, query_engine.py' },
+  { id: 'tools', num: 2, icon: '🛠️', name: 'Tool System', nameZh: '工具系統',
+    desc: 'Let the agent read, write, search, execute. 184 tools loaded from a JSON snapshot.',
+    descZh: '讓代理讀取、寫入、搜尋、執行。從 JSON 快照載入 184 個工具。',
+    color: '#F97316', example: '40 tools, 29K lines of definitions', files: 'tools.py, tool_pool.py, execution_registry.py' },
+  { id: 'context', num: 3, icon: '🧠', name: 'Context Management', nameZh: '上下文管理',
+    desc: 'Manage what the agent sees. Workspace scanning, system init, compaction, budget control.',
+    descZh: '管理代理看到的內容。工作區掃描、系統初始化、壓縮、預算控制。',
+    color: '#8B5CF6', example: '4-tier compaction, static/dynamic prompt split', files: 'context.py, system_init.py, prefetch.py' },
+  { id: 'persistence', num: 4, icon: '💾', name: 'Persistence', nameZh: '持久化',
+    desc: 'Remember across sessions. Session save/load, transcript compaction, audit history.',
+    descZh: '跨會話記憶。會話儲存/載入、對話記錄壓縮、審計歷史。',
+    color: '#10B981', example: 'CLAUDE.md hierarchy + session store', files: 'session_store.py, transcript.py, history.py' },
+  { id: 'verification', num: 5, icon: '✅', name: 'Verification', nameZh: '驗證',
+    desc: 'Trust but verify. Cost tracking hooks, safety checks, parity self-auditing.',
+    descZh: '信任但驗證。成本追蹤鉤子、安全檢查、同步自我審計。',
+    color: '#14B8A6', example: 'PreToolUse / PostToolUse hooks', files: 'costHook.py, cost_tracker.py, parity_audit.py' },
+  { id: 'constraints', num: 6, icon: '🛑', name: 'Constraints', nameZh: '約束',
+    desc: 'Define what the agent CANNOT do. Permission engine, trust modes, OS sandbox.',
+    descZh: '定義代理不能做什麼。權限引擎、信任模式、作業系統沙箱。',
+    color: '#EF4444', example: '6-layer permission engine, OS sandbox', files: 'permissions.py, models.py' },
+];
+---
+<BaseLayout title="Home">
+  <!-- Hero -->
+  <section class="hero">
+    <h1>Agent-Harness-101</h1>
+    <p class="subtitle" data-lang="en">
+      Learn Agent Harness Engineering in Python — Architecture Patterns from Claude Code
+    </p>
+    <p class="subtitle" data-lang="zh-TW">
+      用 Python 學習 Agent Harness 工程 — 來自 Claude Code 的架構模式
+    </p>
+  </section>
+
+  <!-- The Formula -->
+  <section class="container">
+    <div class="formula-box">
+      <div class="equation">Agent = Model + Harness</div>
+      <p style="margin-top: 1rem; color: var(--color-text-muted); font-size: 0.9rem;">
+        <span data-lang="en">~40% of Claude Code's capability comes from the harness, not the model</span>
+        <span data-lang="zh-TW">Claude Code 約 40% 的能力來自 harness（駕馭框架），而非模型本身</span>
+      </p>
+    </div>
+  </section>
+
+  <!-- Architecture Diagram -->
+  <section class="container" style="margin: 3rem auto;">
+    <h2 style="text-align: center;">
+      <span data-lang="en">The 6-Layer Architecture</span>
+      <span data-lang="zh-TW">六層架構</span>
+    </h2>
+    <div style="max-width: 600px; margin: 2rem auto;">
+      <svg viewBox="0 0 400 360" xmlns="http://www.w3.org/2000/svg" style="width: 100%;">
+        {layers.map((layer, i) => {
+          const y = i * 55 + 10;
+          return (
+            <a href={`${base}layer/${layer.id}`}>
+              <rect x="40" y={y} width="320" height="45" rx="8"
+                    fill={layer.color + '20'} stroke={layer.color} stroke-width="2"/>
+              <text x="65" y={y + 28} fill={layer.color} font-size="14" font-weight="700">
+                {layer.icon} Layer {layer.num}: {layer.name}
+              </text>
+            </a>
+          );
+        })}
+      </svg>
+    </div>
+  </section>
+
+  <!-- Layer Cards -->
+  <section class="container" id="layers">
+    <h2>
+      <span data-lang="en">The 6 Layers</span>
+      <span data-lang="zh-TW">六個層級</span>
+    </h2>
+    <div class="layers-grid">
+      {layers.map((layer) => (
+        <a href={`${base}layer/${layer.id}`} style="text-decoration: none;">
+          <div class="layer-card" data-layer={layer.id}>
+            <h3 style={`color: ${layer.color}; margin-top: 0;`}>
+              {layer.icon} Layer {layer.num}: {layer.name}
+            </h3>
+            <p data-lang="en" style="color: var(--color-text-muted);">{layer.desc}</p>
+            <p data-lang="zh-TW" style="color: var(--color-text-muted);">{layer.descZh}</p>
+            <p style="font-size: 0.8rem; color: var(--color-text-muted); margin-top: 0.75rem;">
+              <strong>Claude Code:</strong> {layer.example}<br/>
+              <strong>claw-code:</strong> <code>{layer.files}</code>
+            </p>
+          </div>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <!-- Quick Start -->
+  <section class="container" style="margin: 4rem auto;">
+    <h2>
+      <span data-lang="en">Quick Start</span>
+      <span data-lang="zh-TW">快速開始</span>
+    </h2>
+    <pre><code>git clone https://github.com/jack-lin-ds-ai/agent-harness-101.git
+cd agent-harness-101
+pip install -r examples/requirements.txt
+python examples/01_agent_loop.py</code></pre>
+  </section>
+
+  <!-- The Key Table -->
+  <section class="container" style="margin: 3rem auto;">
+    <h2>
+      <span data-lang="en">Layer Summary</span>
+      <span data-lang="zh-TW">層級總覽</span>
+    </h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Layer</th>
+          <th data-lang="en">What It Does</th>
+          <th data-lang="zh-TW">功能</th>
+          <th>Claude Code Example</th>
+        </tr>
+      </thead>
+      <tbody>
+        {layers.map((layer) => (
+          <tr>
+            <td style={`color: ${layer.color};`}>{layer.icon} {layer.name}</td>
+            <td data-lang="en">{layer.desc}</td>
+            <td data-lang="zh-TW">{layer.descZh}</td>
+            <td><code>{layer.example}</code></td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </section>
+
+  <!-- References -->
+  <section class="container" style="margin: 4rem auto;">
+    <h2>
+      <span data-lang="en">References</span>
+      <span data-lang="zh-TW">參考資料</span>
+    </h2>
+    <ul style="line-height: 2;">
+      <li><a href="https://github.com/instructkr/claw-code">instructkr/claw-code</a> — Clean-room Python/Rust rewrite of Claude Code</li>
+      <li><a href="https://github.com/shareAI-lab/learn-claude-code">shareAI-lab/learn-claude-code</a> — 12-step educational harness</li>
+      <li><a href="https://blog.langchain.com/improving-deep-agents-with-harness-engineering/">LangChain: Improving Deep Agents with Harness Engineering</a></li>
+      <li><a href="https://martinfowler.com/articles/exploring-gen-ai/harness-engineering.html">Martin Fowler: Harness Engineering</a></li>
+      <li><a href="https://www.humanlayer.dev/blog/skill-issue-harness-engineering-for-coding-agents">HumanLayer: Skill Issue — Harness Engineering for Coding Agents</a></li>
+    </ul>
+  </section>
+</BaseLayout>
