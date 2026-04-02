@@ -19,8 +19,7 @@ export function getStaticPaths() {
 }
 
 const { id } = Astro.params as { id: string };
-const layer = layers[id];
-if (!layer) return Astro.redirect(base);
+const layer = layers[id]!;
 
 // Load snippet file
 import { readFileSync } from 'node:fs';
@@ -31,8 +30,7 @@ try {
   snippet = readFileSync(snippetPath, 'utf-8');
 } catch { snippet = '# Snippet not found'; }
 
-// Load content
-import { readdirSync } from 'node:fs';
+// Load content markdown
 let contentEn = '';
 let contentZh = '';
 try {
@@ -43,6 +41,21 @@ try {
   const zhPath = resolve(process.cwd(), `src/content/zh-TW/0${layer.num}-${id}.md`);
   contentZh = readFileSync(zhPath, 'utf-8');
 } catch { contentZh = ''; }
+
+// Simple markdown to HTML converter
+function mdToHtml(md: string): string {
+  return md.split('\n').map(line => {
+    if (line.startsWith('### ')) return `<h4>${line.slice(4)}</h4>`;
+    if (line.startsWith('## ')) return `<h3>${line.slice(3)}</h3>`;
+    if (line.startsWith('# ')) return `<h2>${line.slice(2)}</h2>`;
+    if (line.startsWith('> **')) return `<blockquote><p><strong>${line.slice(4).replace(/\*\*/, '</strong>')}</p></blockquote>`;
+    if (line.startsWith('> ')) return `<blockquote><p>${line.slice(2)}</p></blockquote>`;
+    if (line.startsWith('- **')) return `<li><strong>${line.slice(4).replace(/\*\*/, '</strong>')}${line.includes('—') ? '' : ''}</li>`;
+    if (line.startsWith('- ')) return `<li>${line.slice(2)}</li>`;
+    if (line.trim() === '') return '';
+    return `<p>${line.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/`(.+?)`/g, '<code>$1</code>')}</p>`;
+  }).join('\n');
+}
 ---
 <BaseLayout title={`Layer ${layer.num}: ${layer.name}`}>
   <div class="container" style="padding-top: 2rem; padding-bottom: 4rem;">
@@ -75,26 +88,14 @@ try {
       <div>
         <div data-lang="en">
           {contentEn ? (
-            <Fragment set:html={contentEn.replace(/^#/gm, '###').split('\n').map(line =>
-              line.startsWith('###') ? `<h3>${line.replace(/^###\s*/, '')}</h3>` :
-              line.startsWith('> ') ? `<blockquote><p>${line.slice(2)}</p></blockquote>` :
-              line.startsWith('- ') ? `<li>${line.slice(2)}</li>` :
-              line.trim() === '' ? '<br/>' :
-              `<p>${line}</p>`
-            ).join('\n')} />
+            <Fragment set:html={mdToHtml(contentEn)} />
           ) : (
             <p style="color: var(--color-text-muted);">Content coming soon.</p>
           )}
         </div>
         <div data-lang="zh-TW">
           {contentZh ? (
-            <Fragment set:html={contentZh.replace(/^#/gm, '###').split('\n').map(line =>
-              line.startsWith('###') ? `<h3>${line.replace(/^###\s*/, '')}</h3>` :
-              line.startsWith('> ') ? `<blockquote><p>${line.slice(2)}</p></blockquote>` :
-              line.startsWith('- ') ? `<li>${line.slice(2)}</li>` :
-              line.trim() === '' ? '<br/>' :
-              `<p>${line}</p>`
-            ).join('\n')} />
+            <Fragment set:html={mdToHtml(contentZh)} />
           ) : (
             <p style="color: var(--color-text-muted);">內容即將推出。</p>
           )}
