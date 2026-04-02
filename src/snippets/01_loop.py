@@ -38,8 +38,11 @@ class PortRuntime:
 class QueryEnginePort:
     def submit_message(self, prompt, matched_commands=(), matched_tools=(), denied_tools=()):
         if len(self.mutable_messages) >= self.config.max_turns:
-            return TurnResult(prompt=prompt, output='Max turns reached',
-                              stop_reason='max_turns_reached', ...)  # ← Guard: prevent infinite loops
+            return TurnResult(                          # ← Guard: prevent infinite loops
+                prompt=prompt, output='Max turns reached',
+                matched_commands=matched_commands, matched_tools=matched_tools,
+                permission_denials=denied_tools, usage=self.total_usage,
+                stop_reason='max_turns_reached')
 
         output = self._format_output(summary_lines)
         projected_usage = self.total_usage.add_turn(prompt, output)  # ← Track token budget

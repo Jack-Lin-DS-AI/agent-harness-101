@@ -56,7 +56,8 @@ def run_setup(cwd=None, trusted=True):                 # ← Binary trust gate a
     # trusted=False → restricted mode (deferred init skipped)
     deferred = run_deferred_init(trusted=trusted)      # ← Trust-gated initialization
     return SetupReport(setup=build_workspace_setup(),
-                       trusted=trusted, deferred_init=deferred, ...)
+                       trusted=trusted, deferred_init=deferred,
+                       prefetches=tuple(prefetches), cwd=root)
 
 # --- Part E: Sandbox Patterns [Teaching Implementation — based on Rust sandbox.rs] ---
 # claw-code's Rust sandbox.rs (364 lines) implements OS-level process isolation.
